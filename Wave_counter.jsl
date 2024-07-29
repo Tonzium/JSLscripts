@@ -1,0 +1,33 @@
+Names Default To Here(1);
+
+// Open your data table
+// This script creates two new columns (Wave_Indicator and Wave_Number) for your current data table
+
+dt = Current Data Table();
+
+// Initialize the wave counter and the indicator
+wave_indicator = 0;
+wave_count = 0;
+// Choose ur threshold
+threshold = 6300;
+
+// Create new "Wave Indicator" -Column which tells us do we have Signal or not (1, 0).
+dt << New Column("Wave Indicator", Numeric, Nominal, Formula(
+If( :RESULT <= threshold,
+	0,
+	If( :RESULT > threshold,
+		wave_indicator = 1,
+		0)
+	)
+));
+
+// Create new "Wave Number" -Column -> Count the Signals
+dt << New Column("Wave Number", Numeric, Nominal, Formula(
+If( :Wave Indicator == 0, 0,
+	If( :Wave Indicator == 1 & Lag( :Wave Indicator == 0, 1), wave_count += 1,
+		If( :Wave Indicator == 1 & Lag( :Wave Indicator == 1, 1), wave_count, 0
+				)
+			)
+		)
+	)
+);
